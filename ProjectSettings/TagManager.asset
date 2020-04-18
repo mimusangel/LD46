@@ -13,9 +13,9 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
+  - Planet
+  - Bullet
+  - Asteroid
   - 
   - 
   - 
@@ -40,4 +40,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Case
+    uniqueID: 4294889837
+    locked: 0
+  - name: UI
+    uniqueID: 2194614943
     locked: 0
