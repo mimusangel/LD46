@@ -35,13 +35,56 @@ public class Rocket : MonoBehaviour
 		{
 			if (aste.Hit(Random.Range(10, 21)))
 			{
-				sender.AddGold(Random.Range(20, 80));
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(60, 100));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(20, 80));
+						break;
+					case GameSettings.Difficulty.Hard:
+						sender.AddGold(Random.Range(0, 100));
+						break;
+				}
 			}
 			else
 			{
-				sender.AddGold(Random.Range(0, 20));
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(10, 30));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(0, 10));
+						break;
+					case GameSettings.Difficulty.Hard:
+						break;
+				}
 			}
 			Destroy(gameObject);
+			return;
+		}
+		ET et = collision.gameObject.GetComponent<ET>();
+		if (et)
+		{
+			if (et.Hit(Random.Range(10, 21)))
+			{
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(100, 160));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(60, 120));
+						break;
+					case GameSettings.Difficulty.Hard:
+						sender.AddGold(Random.Range(40, 140));
+						break;
+				}
+			}
+			Destroy(gameObject);
+			return;
 		}
 	}
 }

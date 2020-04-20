@@ -5,19 +5,28 @@ using UnityEngine;
 public class Asteroid : MonoBehaviour
 {
 	int life;
-	int maxLife;
+	public int maxLife { get; private set; }
 
 	public bool Big = false;
+	Rigidbody2D rg2d;
+	public Vector2 dir;
+	public float vel;
 
-    void Start()
+	List<Vector3> points = new List<Vector3>();
+
+	void Start()
     {
-		maxLife = Random.Range(10, 21);
+		maxLife = Random.Range(15, 31);
 		if (Big)
 		{
-			maxLife *= 2;
+			maxLife *= 4;
 			transform.localScale = Vector3.one * 2;
 		}
 		life = maxLife;
+		rg2d = GetComponent<Rigidbody2D>();
+		vel = Random.Range(8.0f, 12.0f) + GameManager.Instance.GameTime / 30.0f;
+		rg2d.velocity = dir * vel;
+		rg2d.AddTorque(Random.Range(-10.0f, 10.0f), ForceMode2D.Impulse);
 	}
 
 	private void Update()
@@ -29,6 +38,17 @@ public class Asteroid : MonoBehaviour
 		if (transform.position.sqrMagnitude > 300 * 300)
 		{
 			Destroy(gameObject);
+		}
+		Vector2 solarDir = (-(Vector2)transform.position).normalized;
+		rg2d.velocity = (rg2d.velocity + solarDir * 3.0f * Time.deltaTime).normalized * vel;
+		points.Add(transform.position);
+	}
+
+	private void OnDrawGizmos()
+	{
+		for (int i = 0; i < points.Count - 1; i++)
+		{
+			Gizmos.DrawLine(points[i], points[i + 1]);
 		}
 	}
 
@@ -49,6 +69,7 @@ public class Asteroid : MonoBehaviour
 					GameManager.Instance.SpawnSmallAsteroid((Vector2)transform.position + offset);
 				}
 			}
+			GameManager.Instance.AddScore(maxLife);
 			Destroy(gameObject);
 			return true;
 		}

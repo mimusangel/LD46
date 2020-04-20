@@ -27,11 +27,11 @@ public class Timer : MonoBehaviour
 		{
 			if (Time.timeScale <= 0)
 			{
-				timerTxt.text = $"{Mathf.RoundToInt(GameManager.Instance.GameTime)}s (Pause)";
+				timerTxt.text = $"Time:\t\t{Mathf.RoundToInt(GameManager.Instance.GameTime)}s (Pause)\nScore:\t{GameManager.Instance.GameScore}";
 			}
 			else
 			{
-				timerTxt.text = $"{Mathf.RoundToInt(GameManager.Instance.GameTime)}s";
+				timerTxt.text = $"Time:\t\t{Mathf.RoundToInt(GameManager.Instance.GameTime)}s\nScore:\t{GameManager.Instance.GameScore}";
 			}
 		}
 

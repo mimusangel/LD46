@@ -11,9 +11,30 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 
 	public LayerMask LayerMask;
 	public int level = 0;
-	public float targetDistance = 0;
-	public float fireRate = 0.0f;
-
+	private float targetDistance = 0;
+	public float TargetDistance
+	{
+		get
+		{
+			if (type == CaseType.Cannon || type == CaseType.Rocket)
+			{
+				return targetDistance + planete.SatelliteCount * 5.0f;
+			}
+			return targetDistance;
+		}
+	}
+	private float fireRate = 0.0f;
+	public float FireRate
+	{
+		get
+		{
+			if (type == CaseType.DoubleCannon)
+			{
+				return fireRate - planete.SatelliteCount * 0.05f;
+			}
+			return fireRate;
+		}
+	}
 	public float fireTime = 0.0f;
 
 	private GameObject UniqueProjectile;
@@ -74,13 +95,15 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 
 	private void Update()
 	{
+		if (Time.timeScale <= 0) return;
 		if (type != CaseType.None)
 		{
 			if (type == CaseType.Shield)
 			{
-				ShieldStatus = Mathf.Min(ShieldStatus + Time.deltaTime * 0.001f, 1.0f);
+				float speed = 0.001f * (10.0f * (planete.SatelliteCount + 1.0f));
+				ShieldStatus = Mathf.Min(ShieldStatus + Time.deltaTime * speed, 1.0f);
 			}
-			Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, targetDistance, LayerMask.value);
+			Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, TargetDistance, LayerMask.value);
 			Collider2D focus = null;
 			fireTime -= Time.deltaTime;
 			for (int i = 0; i < colliders.Length; i++)
@@ -122,6 +145,7 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 							bullet = go.GetComponent<Bullet>();
 							bullet.sender = planete;
 							bullet.bulletDamage = 5;
+							Instantiate(GameManager.Instance.LaserSound, pos, Quaternion.identity);
 							break;
 						case CaseType.DoubleCannon:
 							if (swap)
@@ -134,6 +158,7 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 							bullet = go.GetComponent<Bullet>();
 							bullet.sender = planete;
 							bullet.bulletDamage = 1;
+							Instantiate(GameManager.Instance.LaserSound, pos, Quaternion.identity);
 							break;
 						case CaseType.Rocket:
 							if (!UniqueProjectile && UniqueProjectileFired)
@@ -153,6 +178,7 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 									UniqueProjectile = go;
 									UniqueProjectileFired = true;
 									spriteRendererTop.sprite = null;
+									Instantiate(GameManager.Instance.RocketSound, pos, Quaternion.identity);
 								}
 							}
 							break;
@@ -161,7 +187,7 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 			}
 			if (fireTime <= 0.0f)
 			{
-				fireTime += fireRate;
+				fireTime += FireRate;
 			}
 		}
 		else
@@ -173,7 +199,7 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 	private void OnDrawGizmos()
 	{
 		Gizmos.color = Color.green;
-		Gizmos.DrawWireSphere(transform.position, targetDistance);
+		Gizmos.DrawWireSphere(transform.position, TargetDistance);
 	}
 
 	public void SetType(CaseType nType)
@@ -200,6 +226,11 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 			case CaseType.DoubleCannon:
 				level = 1;
 				spriteRenderer.sprite = GameManager.Instance.WeaponBase;
+				UpgradeWeapon();
+				break;
+			case CaseType.Satellite:
+				level = 1;
+				spriteRenderer.sprite = GameManager.Instance.Antenna;
 				UpgradeWeapon();
 				break;
 			case CaseType.None:
@@ -264,6 +295,35 @@ public class PlaneteCase : MonoBehaviour, IPointerClickHandler
 					fireRate = 0.25f;
 				}
 				break;
+			case CaseType.Satellite:
+				targetDistance = 0.0f;
+				spriteRendererTop.sprite = null;
+				fireRate = 0.0f;
+				break;
 		}
+	}
+
+	public int CaseScore()
+	{
+		int score = 0;
+		switch (type)
+		{
+			case CaseType.Cannon:
+				score = level * 200;
+				break;
+			case CaseType.Rocket:
+				score = level * 400;
+				break;
+			case CaseType.Shield:
+				score = level * 500;
+				break;
+			case CaseType.DoubleCannon:
+				score = level * 300;
+				break;
+			case CaseType.Satellite:
+				score = level * 600;
+				break;
+		}
+		return score;
 	}
 }

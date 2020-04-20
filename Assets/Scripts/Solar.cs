@@ -23,6 +23,13 @@ public class Solar : MonoBehaviour
 	public AnimationCurve endCurve;
 
 
+	float absorbTime = 0.0f;
+
+	public AudioSource AudioCritique;
+	public AudioSource AudioEnd;
+
+	public GameObject WarningUI;
+
 	private void Awake()
 	{
 		if (Instance != null)
@@ -35,14 +42,14 @@ public class Solar : MonoBehaviour
 	void Start()
     {
 		spriteRenderer = GetComponent<SpriteRenderer>();
-
+		WarningUI.SetActive(false);
 	}
 
 	private void Update()
 	{
 		if (!End)
 		{
-
+			absorbTime = Mathf.Max(absorbTime - Time.deltaTime, 0.0f);
 			bool hasShieldActif = false;
 			for (int j = 0; j < shields.Count; j++)
 			{
@@ -53,12 +60,31 @@ public class Solar : MonoBehaviour
 				}
 			}
 			Shield.SetActive(hasShieldActif);
-			Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, scale, layer.value);
+			Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, (scale + 1.0f * absorbTime), layer.value);
 			for (int i = 0; i < colliders.Length; i++)
 			{
+				int dmg = 1;
 				if (colliders[i].gameObject == this.gameObject) continue;
+				Planete pl = colliders[i].gameObject.GetComponent<Planete>();
+				if (pl)
+				{
+					bool isPinky = colliders[i].gameObject.GetComponent<Pinky>() != null;
+					if (isPinky)
+					{
+						GameManager.Instance.SpawnPlanete();
+					}
+					pl.Dead(true);
+				}
+				Asteroid at = colliders[i].gameObject.GetComponent<Asteroid>();
+				if (at)
+				{
+					GameManager.Instance.AddScore(-at.maxLife);
+					if (at.Big)
+					{
+						dmg++;
+					}
+				}
 				Destroy(colliders[i].gameObject);
-				bool absorb = false;
 				if (hasShieldActif)
 				{
 					for (int j = 0; j < shields.Count; j++)
@@ -66,25 +92,40 @@ public class Solar : MonoBehaviour
 						if (shields[j].HasShield)
 						{
 							shields[j].UseShield();
-							absorb = true;
-							break;
+							dmg--;
+							if (dmg <= 0) break;
 						}
 					}
 				}
-				if (!absorb)
+				if (dmg > 0)
 				{
-					scale += 1.0f;
+					absorbTime += dmg;
+					scale += dmg;
+					if (scale >= 20)
+					{
+						WarningUI.SetActive(true);
+						if (AudioCritique.isPlaying == false)
+						{
+							AudioCritique.Play();
+						}
+						float pct = (scale - 20.0f) / 10.0f;
+						AudioCritique.pitch = 1 + pct * 0.5f;
+					}
 					End = scale >= 30.0f;
-					if (End) timer = Time.time;
+					if (End)
+					{
+						timer = Time.time;
+						AudioCritique.Stop();
+					}
 				}
 			}
-			transform.localScale = Vector3.one * scale;
+			transform.localScale = Vector3.one * (scale + 1.0f * absorbTime);
 			UpdateAnimation();
 		}
 		else
 		{
 			float pct = Time.time - timer;
-			scale = endCurve.Evaluate(pct > 1.5f ? 1.5f : pct);
+			scale = endCurve.Evaluate(pct > 1.5f ? 1.5f : pct) * 1.5f;
 			transform.localScale = Vector3.one * scale;
 			Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, scale, layer.value);
 			for (int i = 0; i < colliders.Length; i++)
@@ -92,9 +133,21 @@ public class Solar : MonoBehaviour
 				if (colliders[i].gameObject == this.gameObject) continue;
 				Destroy(colliders[i].gameObject);
 			}
+			if (pct >= 0.5f && AudioEnd.isPlaying == false && PanelEnd.Instance.IsVisible == false)
+			{
+				AudioEnd.Play();
+			}
 			float pc = (pct - 1.5f) / 0.5f;
 			pc = Mathf.Clamp01(pc);
 			GetComponent<SpriteRenderer>().color = new Color(1.0f, 1.0f, 1.0f, 1.0f - pc);
+			if (pct > 2.0f)
+			{
+				if (PanelEnd.Instance.IsVisible == false)
+				{
+					GameSettings.AddScore();
+					PanelEnd.Instance.Show();
+				}
+			}
 		}
 	}
 
@@ -106,6 +159,11 @@ public class Solar : MonoBehaviour
 			frame = (frame + 1) % animationFrame.Count;
 			spriteRenderer.sprite = animationFrame[frame];
 			timeFrame -= 0.2f;
+		}
+
+		if (WarningUI.activeSelf)
+		{
+			WarningUI.transform.localScale = Vector3.one * (1 + Mathf.PingPong(Time.time, 0.2f));
 		}
 	}
 

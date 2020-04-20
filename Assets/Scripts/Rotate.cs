@@ -20,6 +20,13 @@ public class Rotate : MonoBehaviour
     {
 		if (targetToRotate != null)
 		{
+			Vector2 dir = new Vector2(
+				Random.Range(-1.0f, 1.0f),
+				Random.Range(-1.0f, 1.0f)
+			);
+			dir.Normalize();
+			CircleCollider2D circleCollider2D = targetToRotate.gameObject.GetComponent<CircleCollider2D>();
+			transform.position = (Vector2)targetToRotate.position + dir * (circleCollider2D.radius + 0.5f);
 			mDistance = Vector2.Distance(transform.position, targetToRotate.position);
 			mDir = (Vector2)transform.position - (Vector2)targetToRotate.position;
 			hasTarget = true;
@@ -32,6 +39,24 @@ public class Rotate : MonoBehaviour
 		mDir.Normalize();
 	}
 	
+	public void ET_TP()
+	{
+		if (hasTarget)
+		{
+			targetToRotate = null;
+			hasTarget = false;
+			GetComponent<Planete>()?.NoMoon();
+		}
+		Vector3 nPos = new Vector3(
+			Random.Range(-50.0f, 50.0f),
+			Random.Range(-50.0f, 50.0f),
+			0.0f
+		);
+		mDistance = Vector2.Distance(nPos, worldPointToRotate);
+		mDir = (Vector2)nPos - worldPointToRotate;
+		transform.position = nPos;
+	}
+
 	void RotateDir(float deg)
 	{
 		float sin = Mathf.Sin(deg * Mathf.Deg2Rad);
@@ -52,6 +77,7 @@ public class Rotate : MonoBehaviour
 			mDir.Normalize();
 
 			hasTarget = false;
+			GetComponent<Planete>()?.NoMoon();
 		}
 		RotateDir((rotateSpeed / mDistance) * Time.deltaTime);
 		if (targetToRotate != null)

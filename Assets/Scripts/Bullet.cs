@@ -20,13 +20,58 @@ public class Bullet : MonoBehaviour
 		{
 			if (aste.Hit(bulletDamage))
 			{
-				sender.AddGold(Random.Range(40, 100));
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(80, 120));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(40, 100));
+						break;
+					case GameSettings.Difficulty.Hard:
+						sender.AddGold(Random.Range(20, 120));
+						break;
+				}
 			}
 			else
 			{
-				sender.AddGold(Random.Range(20, 40));
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(20, 40));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(0, 20));
+						break;
+					case GameSettings.Difficulty.Hard:
+
+						break;
+				}
 			}
 			Destroy(gameObject);
+			return;
+		}
+		ET et = collision.gameObject.GetComponent<ET>();
+		if (et)
+		{
+
+			if (et.Hit(bulletDamage))
+			{
+				switch (GameSettings.GameDifficulty)
+				{
+					case GameSettings.Difficulty.Easy:
+						sender.AddGold(Random.Range(120, 160));
+						break;
+					case GameSettings.Difficulty.Normal:
+						sender.AddGold(Random.Range(80, 140));
+						break;
+					case GameSettings.Difficulty.Hard:
+						sender.AddGold(Random.Range(60, 160));
+						break;
+				}
+			}
+			Destroy(gameObject);
+			return;
 		}
 	}
 }

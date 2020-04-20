@@ -7,5 +7,6 @@ public enum CaseType
 	Cannon = 1,
 	Rocket = 2,
 	Shield = 3,
-	DoubleCannon = 4
+	DoubleCannon = 4,
+	Satellite = 5
 }

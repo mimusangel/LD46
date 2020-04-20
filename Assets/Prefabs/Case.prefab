@@ -182,10 +182,10 @@ MonoBehaviour:
   type: 0
   LayerMask:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 3072
   level: 0
-  targetDistance: 0
-  fireRate: 0
+  fireTime: 0
+  swap: 0
 --- !u!61 &8136398240351736350
 BoxCollider2D:
   m_ObjectHideFlags: 0

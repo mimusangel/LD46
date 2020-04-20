@@ -26,9 +26,16 @@ public class PanelCase : MonoBehaviour
 	public TextMeshProUGUI infoTitle;
 	public TextMeshProUGUI infoDistance;
 	public TextMeshProUGUI infoFireRate;
+	public TextMeshProUGUI infoBuff;
 	public TextMeshProUGUI infoSell;
 	public GameObject upgradeButton;
 	public TextMeshProUGUI indoUpgrade;
+
+	public Button CannonBuyButton;
+	public Button RocketBuyButton;
+	public Button ShieldBuyButton;
+	public Button DoubleCannonBuyButton;
+	public Button SatBuyButton;
 
 
 	void Start()
@@ -51,6 +58,12 @@ public class PanelCase : MonoBehaviour
 		gameObject.SetActive(true);
 		if (planeteCase.type == CaseType.None)
 		{
+			CannonBuyButton.interactable = planeteCase.planete.HasGold(200);
+			RocketBuyButton.interactable = planeteCase.planete.HasGold(400);
+			ShieldBuyButton.interactable = !planeteCase.planete.HasShield && planeteCase.planete.HasGold(500);
+			DoubleCannonBuyButton.interactable = planeteCase.planete.HasGold(300);
+			SatBuyButton.interactable = planeteCase.planete.HasGold(600);
+
 			buyMenu.SetActive(true);
 			infoMenu.SetActive(false);
 		}
@@ -65,13 +78,14 @@ public class PanelCase : MonoBehaviour
 	public void ShowInfo()
 	{
 		int rate;
+		infoBuff.text = "";
 		switch (planeteCase.type)
 		{
 			case CaseType.Cannon:
 				infoImage.sprite = planeteCase.spriteRendererTop.sprite;
 				infoTitle.text = $"Cannon lvl.{planeteCase.level}";
-				infoDistance.text = $"Distance {planeteCase.targetDistance}";
-				rate = Mathf.RoundToInt(1 / planeteCase.fireRate);
+				infoDistance.text = $"Distance {planeteCase.TargetDistance}";
+				rate = Mathf.RoundToInt(1 / planeteCase.FireRate);
 				if (rate <= 0)
 					infoFireRate.text = $"Fire Rate < 1 per sec";
 				else
@@ -83,7 +97,7 @@ public class PanelCase : MonoBehaviour
 			case CaseType.Rocket:
 				infoImage.sprite = planeteCase.spriteRendererTop.sprite;
 				infoTitle.text = $"Rocket Launcher lvl.{planeteCase.level}";
-				infoDistance.text = $"Distance {planeteCase.targetDistance}";
+				infoDistance.text = $"Distance {planeteCase.TargetDistance}";
 				infoFireRate.text = $"Fire Rate: One By One";
 				infoSell.text = $"{planeteCase.level * 200} Gold";
 				indoUpgrade.text = $"{(planeteCase.level + 1) * 400} Gold";
@@ -100,8 +114,8 @@ public class PanelCase : MonoBehaviour
 			case CaseType.DoubleCannon:
 				infoImage.sprite = planeteCase.spriteRendererTop.sprite;
 				infoTitle.text = $"Double Cannon lvl.{planeteCase.level}";
-				infoDistance.text = $"Distance {planeteCase.targetDistance}";
-				rate = Mathf.RoundToInt(1 / planeteCase.fireRate);
+				infoDistance.text = $"Distance {planeteCase.TargetDistance}";
+				rate = Mathf.RoundToInt(1 / planeteCase.FireRate);
 				if (rate <= 0)
 					infoFireRate.text = $"Fire Rate < 1 per sec";
 				else
@@ -109,6 +123,15 @@ public class PanelCase : MonoBehaviour
 				infoSell.text = $"{planeteCase.level * 150} Gold";
 				indoUpgrade.text = $"{(planeteCase.level + 1) * 300} Gold";
 				upgradeButton.SetActive(planeteCase.level < 2);
+				break;
+			case CaseType.Satellite:
+				infoImage.sprite = planeteCase.spriteRendererTop.sprite;
+				infoTitle.text = $"Satellite";
+				infoDistance.text = $"Add Range Buff to Cannon And Rocket Launcher in planete";
+				infoFireRate.text = $"Add Fire Rate Buff to Double Cannon Launcher in planete";
+				infoBuff.text = "Add Reload Rate Buff to Shield in planete";
+				infoSell.text = $"{planeteCase.level * 300} Gold";
+				upgradeButton.SetActive(false);
 				break;
 		}
 	}
@@ -167,6 +190,16 @@ public class PanelCase : MonoBehaviour
 						infoMenu.SetActive(true);
 					}
 					break;
+				case CaseType.Satellite:
+					if (planeteCase.planete.HasGold(600))
+					{
+						planeteCase.planete.UseGold(600);
+						buyMenu.SetActive(false);
+						planeteCase.SetType(t);
+						ShowInfo();
+						infoMenu.SetActive(true);
+					}
+					break;
 			}
 			
 		}
@@ -188,6 +221,9 @@ public class PanelCase : MonoBehaviour
 				break;
 			case CaseType.DoubleCannon:
 				price = (planeteCase.level + 1) * 300;
+				break;
+			case CaseType.Satellite:
+				price = (planeteCase.level + 1) * 600;
 				break;
 		}
 		if (price > 0)
@@ -217,6 +253,9 @@ public class PanelCase : MonoBehaviour
 				break;
 			case CaseType.DoubleCannon:
 				planeteCase.planete.AddGold(planeteCase.level * 150);
+				break;
+			case CaseType.Satellite:
+				planeteCase.planete.AddGold(planeteCase.level * 300);
 				break;
 		}
 		infoMenu.SetActive(false);

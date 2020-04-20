@@ -35,9 +35,20 @@ public class CameraController : MonoBehaviour
 	
     void Update()
     {
+		if (Pause.Instance.IsVisible) return;
 		if (focus == null)
 		{
-			cam.orthographicSize = Mathf.Clamp(cam.orthographicSize - Input.mouseScrollDelta.y, 20.0f, 50.0f);
+			cam.orthographicSize = Mathf.Clamp(cam.orthographicSize - Input.mouseScrollDelta.y, 20.0f, 60.0f);
+			if (Input.GetMouseButton(1))
+			{
+				float hw = Screen.width / 2.0f;
+				float hh = Screen.height / 2.0f;
+				Vector2 mousePos = ((Vector2)Input.mousePosition - new Vector2(hw, hh)) / new Vector2(hw, hh);
+				Vector2 pos = (Vector2)transform.position + mousePos * 25.0f * Time.deltaTime;
+				pos.x = Mathf.Clamp(pos.x, -90, 90);
+				pos.y = Mathf.Clamp(pos.y, -50, 50);
+				transform.position = new Vector3(pos.x, pos.y, transform.position.z);
+			}
 		}
 		else
 		{
@@ -64,6 +75,18 @@ public class CameraController : MonoBehaviour
 		focus = planete;
 		if (focus != null)
 		{
+			foreach (Planete p in Planete.Planetes)
+			{
+				if (p != focus)
+				{
+					p.gameObject.SetActive(false);
+				}
+			}
+			if (focus.isMoon)
+			{
+				focus.infoGold.gameObject.SetActive(true);
+			}
+			focus.UpdateGold();
 			focus.ShowCase();
 			if (lastFocus == null)
 			{
@@ -74,6 +97,14 @@ public class CameraController : MonoBehaviour
 		}
 		else
 		{
+			foreach (Planete p in Planete.Planetes)
+			{
+				p.gameObject.SetActive(true);
+			}
+			if (lastFocus.isMoon)
+			{
+				lastFocus.infoGold.gameObject.SetActive(false);
+			}
 			cam.orthographicSize = size;
 			gameObject.transform.position = position;
 			Time.timeScale = 1.0f;
